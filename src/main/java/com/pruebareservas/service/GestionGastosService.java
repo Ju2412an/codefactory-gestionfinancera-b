@@ -5,6 +5,9 @@ import com.pruebareservas.entity.*;
 import com.pruebareservas.repository.*;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class GestionGastosService {
 
@@ -20,51 +23,76 @@ public class GestionGastosService {
         this.presupuestoRepository = presupuestoRepository;
     }
 
-    public PresupuestoEntity inicializar(double valor) {
-        PresupuestoEntity p = new PresupuestoEntity();
+    public PresupuestoEntity inicializar(Long usuarioId, double valor) {
+        PresupuestoEntity p = presupuestoRepository.findByUsuarioId(usuarioId)
+                .orElseGet(PresupuestoEntity::new);
+        p.setUsuarioId(usuarioId);
         p.setTotal(valor);
         return presupuestoRepository.save(p);
     }
 
-    public PresupuestoEntity registrarIngreso(MovimientoDTO dto) {
+    public PresupuestoEntity obtenerPresupuesto(Long usuarioId) {
+        return presupuestoRepository.findByUsuarioId(usuarioId)
+                .orElseThrow(() -> new RuntimeException("Presupuesto no inicializado para el usuario"));
+    }
 
-        CategoriaEntity categoria = categoriaRepository.findById(dto.getCategoriaId()).orElseThrow();
+    public PresupuestoEntity registrarIngreso(Long usuarioId, MovimientoDTO dto) {
+        CategoriaEntity categoria = categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-        IngresoEntity ingreso = new IngresoEntity();
+        PresupuestoEntity presupuesto = obtenerPresupuesto(usuarioId);
+
+        MovimientoEntity ingreso = new MovimientoEntity();
+        ingreso.setTipo(TipoMovimiento.INGRESO);
         ingreso.setValor(dto.getValor());
+        ingreso.setDescripcion(dto.getDescripcion());
         ingreso.setCategoria(categoria);
-
+        ingreso.setUsuarioId(usuarioId);
         movimientoRepository.save(ingreso);
 
-        PresupuestoEntity presupuesto = obtenerPresupuesto();
-
         presupuesto.setTotal(presupuesto.getTotal() + dto.getValor());
-
         return presupuestoRepository.save(presupuesto);
     }
 
-public PresupuestoEntity registrarGasto(MovimientoDTO dto) {
+    public PresupuestoEntity registrarGasto(Long usuarioId, MovimientoDTO dto) {
+        CategoriaEntity categoria = categoriaRepository.findById(dto.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
-    CategoriaEntity categoria = categoriaRepository.findById(dto.getCategoriaId()).orElseThrow();
+        PresupuestoEntity presupuesto = obtenerPresupuesto(usuarioId);
 
-    PresupuestoEntity presupuesto = obtenerPresupuesto();
+        if (presupuesto.getTotal() < dto.getValor()) {
+            throw new RuntimeException("No hay suficiente saldo para realizar el gasto");
+        }
 
-    if (presupuesto.getTotal() < dto.getValor()) {
-        throw new RuntimeException("No hay suficiente saldo para realizar el gasto");
+        MovimientoEntity gasto = new MovimientoEntity();
+        gasto.setTipo(TipoMovimiento.GASTO);
+        gasto.setValor(dto.getValor());
+        gasto.setDescripcion(dto.getDescripcion());
+        gasto.setCategoria(categoria);
+        gasto.setUsuarioId(usuarioId);
+        movimientoRepository.save(gasto);
+
+        presupuesto.setTotal(presupuesto.getTotal() - dto.getValor());
+        return presupuestoRepository.save(presupuesto);
     }
 
-    GastoEntity gasto = new GastoEntity();
-    gasto.setValor(dto.getValor());
-    gasto.setCategoria(categoria);
+    public List<MovimientoDTO> listarMovimientos(Long usuarioId) {
+        return movimientoRepository.findByUsuarioIdOrderByFechaDesc(usuarioId).stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
 
-    movimientoRepository.save(gasto);
-
-    presupuesto.setTotal(presupuesto.getTotal() - dto.getValor());
-
-    return presupuestoRepository.save(presupuesto);
-}
-
-    public PresupuestoEntity obtenerPresupuesto() {
-        return presupuestoRepository.findAll().stream().findFirst().orElseThrow();
+    private MovimientoDTO toDTO(MovimientoEntity m) {
+        MovimientoDTO dto = new MovimientoDTO();
+        dto.setId(m.getId());
+        dto.setTipo(m.getTipo());
+        dto.setValor(m.getValor());
+        dto.setDescripcion(m.getDescripcion());
+        dto.setFecha(m.getFecha());
+        if (m.getCategoria() != null) {
+            dto.setCategoriaId(m.getCategoria().getId());
+            dto.setCategoriaNombre(m.getCategoria().getNombre());
+        }
+        return dto;
     }
 }
