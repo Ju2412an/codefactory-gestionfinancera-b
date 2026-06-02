@@ -14,17 +14,43 @@ public class PresupuestoEntity {
     private Long id;
 
     @Column(nullable = false)
+    private double presupuestoInicial;
+
+    @Column(nullable = false)
     private double total;
 
     @Column(name = "usuario_id", nullable = false)
     private Long usuarioId;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public double getTotal() { return total; }
-    public void setTotal(double total) { this.total = total; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Long getUsuarioId() { return usuarioId; }
-    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
+    public double getPresupuestoInicial() {
+        return presupuestoInicial;
+    }
+
+    public void setPresupuestoInicial(double presupuestoInicial) {
+        this.presupuestoInicial = presupuestoInicial;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public Long getUsuarioId() {
+        return usuarioId;
+    }
+
+    public void setUsuarioId(Long usuarioId) {
+        this.usuarioId = usuarioId;
+    }
 }
