@@ -30,14 +30,17 @@ public class GestionGastosService {
 
     public PresupuestoEntity inicializar(Long usuarioId, double valor) {
 
-        PresupuestoEntity p = presupuestoRepository.findByUsuarioId(usuarioId)
-                .orElseGet(PresupuestoEntity::new);
+    PresupuestoEntity p = presupuestoRepository.findByUsuarioId(usuarioId)
+            .orElseGet(PresupuestoEntity::new);
 
-        p.setUsuarioId(usuarioId);
-        p.setTotal(valor);
+    p.setUsuarioId(usuarioId);
 
-        return presupuestoRepository.save(p);
-    }
+    p.setPresupuestoInicial(valor);
+
+    p.setTotal(valor);
+
+    return presupuestoRepository.save(p);
+}
 
     public PresupuestoEntity obtenerPresupuesto(Long usuarioId) {
 
@@ -161,24 +164,28 @@ public AlertaPresupuestoDTO verificarAlertaPresupuesto(Long usuarioId) {
     BalanceMensualDTO balance =
             obtenerBalanceMensual(usuarioId);
 
-    double presupuestoInicial =
-            balance.getSaldoActual() +
-            balance.getTotalGastos();
+    PresupuestoEntity presupuesto =
+            obtenerPresupuesto(usuarioId);
 
     double porcentaje = 0;
 
-    if (presupuestoInicial > 0) {
+    if (presupuesto.getPresupuestoInicial() > 0) {
 
         porcentaje =
-                (balance.getTotalGastos() /
-                        presupuestoInicial) * 100;
+                (balance.getTotalGastos()
+                        / presupuesto.getPresupuestoInicial())
+                        * 100;
     }
 
     AlertaPresupuestoDTO dto =
             new AlertaPresupuestoDTO();
 
     dto.setTotalGastado(balance.getTotalGastos());
-    dto.setPresupuestoActual(balance.getSaldoActual());
+
+    dto.setPresupuestoActual(
+            presupuesto.getPresupuestoInicial()
+    );
+
     dto.setPorcentajeGastado(porcentaje);
 
     if (porcentaje >= 50) {
