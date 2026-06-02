@@ -161,36 +161,32 @@ public AlertaPresupuestoDTO verificarAlertaPresupuesto(Long usuarioId) {
     BalanceMensualDTO balance =
             obtenerBalanceMensual(usuarioId);
 
-    double saldoActual =
-            balance.getSaldoActual();
+    double presupuestoInicial =
+            balance.getSaldoActual() +
+            balance.getTotalGastos();
 
     double porcentaje = 0;
 
-    if (saldoActual > 0) {
+    if (presupuestoInicial > 0) {
 
         porcentaje =
-                (balance.getTotalGastos()
-                        / saldoActual) * 100;
+                (balance.getTotalGastos() /
+                        presupuestoInicial) * 100;
     }
 
     AlertaPresupuestoDTO dto =
             new AlertaPresupuestoDTO();
 
-    dto.setTotalGastado(
-            balance.getTotalGastos());
-
-    dto.setPresupuestoActual(
-            saldoActual);
-
-    dto.setPorcentajeGastado(
-            porcentaje);
+    dto.setTotalGastado(balance.getTotalGastos());
+    dto.setPresupuestoActual(balance.getSaldoActual());
+    dto.setPorcentajeGastado(porcentaje);
 
     if (porcentaje >= 50) {
 
         dto.setAlertaActiva(true);
 
         dto.setMensaje(
-            "ALERTA: Tus gastos ya superan el 50% de tu saldo actual."
+                "ALERTA: Has superado el 50% de tu presupuesto mensual."
         );
 
     } else {
@@ -198,7 +194,7 @@ public AlertaPresupuestoDTO verificarAlertaPresupuesto(Long usuarioId) {
         dto.setAlertaActiva(false);
 
         dto.setMensaje(
-            "Tu nivel de gastos está dentro del rango permitido."
+                "Tu nivel de gastos está dentro del rango permitido."
         );
     }
 
