@@ -14,9 +14,6 @@ public class PresupuestoEntity {
     private Long id;
 
     @Column(nullable = false)
-    private double presupuestoInicial;
-
-    @Column(nullable = false)
     private double total;
 
     @Column(name = "usuario_id", nullable = false)
@@ -28,14 +25,6 @@ public class PresupuestoEntity {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public double getPresupuestoInicial() {
-        return presupuestoInicial;
-    }
-
-    public void setPresupuestoInicial(double presupuestoInicial) {
-        this.presupuestoInicial = presupuestoInicial;
     }
 
     public double getTotal() {
