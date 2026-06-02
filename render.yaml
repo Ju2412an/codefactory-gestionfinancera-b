@@ -10,10 +10,20 @@ services:
     plan: free
     region: oregon
     envVars:
-      - key: SPRING_DATASOURCE_URL
+      - key: DATABASE_HOST
         fromDatabase:
           name: gestionfinanciera-db
-          property: internalConnectionString
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: gestionfinanciera-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: gestionfinanciera-db
+          property: database
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: gestionfinanciera-db
