@@ -161,28 +161,20 @@ public AlertaPresupuestoDTO verificarAlertaPresupuesto(Long usuarioId) {
     BalanceMensualDTO balance =
             obtenerBalanceMensual(usuarioId);
 
-    PresupuestoEntity presupuesto =
-            obtenerPresupuesto(usuarioId);
-
     double porcentaje = 0;
 
-    if (presupuesto.getPresupuestoInicial() > 0) {
+    if (balance.getSaldoActual() > 0) {
 
         porcentaje =
-                (balance.getTotalGastos()
-                        / presupuesto.getPresupuestoInicial())
-                        * 100;
+                (balance.getTotalGastos() /
+                 (balance.getTotalGastos() + balance.getSaldoActual())) * 100;
     }
 
     AlertaPresupuestoDTO dto =
             new AlertaPresupuestoDTO();
 
     dto.setTotalGastado(balance.getTotalGastos());
-
-    dto.setPresupuestoActual(
-            presupuesto.getPresupuestoInicial()
-    );
-
+    dto.setPresupuestoActual(balance.getSaldoActual());
     dto.setPorcentajeGastado(porcentaje);
 
     if (porcentaje >= 50) {
