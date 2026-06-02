@@ -34,9 +34,6 @@ public class GestionGastosService {
             .orElseGet(PresupuestoEntity::new);
 
     p.setUsuarioId(usuarioId);
-
-    p.setPresupuestoInicial(valor);
-
     p.setTotal(valor);
 
     return presupuestoRepository.save(p);
